@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">MyAnimeQuiz</string>
+    <string name="romaji">Romaji</string>
+    <string name="english">English</string>
+    <string name="japanese">Japanese</string>
 </resources>
