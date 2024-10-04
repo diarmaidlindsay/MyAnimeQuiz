@@ -14,12 +14,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.diarmaidlindsay.myanimequiz.QuizApplication
 import com.github.diarmaidlindsay.myanimequiz.extensions.showToast
+import com.github.diarmaidlindsay.myanimequiz.ui.callbacks.AuthCodeExchangedCallback
+import com.github.diarmaidlindsay.myanimequiz.ui.callbacks.AuthResponseHandledCallback
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -32,9 +33,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Check token expiry
+        mainViewModel.checkTokenExpiry()
+
         // Set the Compose UI
         setContent {
-            val accessToken by mainViewModel.accessToken.collectAsStateWithLifecycle(QuizApplication.accessToken)
+            val accessTokenState =
+                mainViewModel.accessToken.collectAsStateWithLifecycle(QuizApplication.accessToken)
+            val accessToken = accessTokenState.value
             AnimeQuizAppUI(mainViewModel, accessToken)
         }
 
@@ -42,10 +48,18 @@ class MainActivity : ComponentActivity() {
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
             mainViewModel.handleAuthResponse(result, object : AuthResponseHandledCallback {
+                override fun onAuthSuccess() {
+                    // Do nothing - used only to enable unit testing
+                }
+
                 override fun onAuthError(errorMessage: String?) {
                     showToast(errorMessage ?: "Error handling auth response")
                 }
             }, object : AuthCodeExchangedCallback {
+                override fun onAuthCodeExchangedSuccess() {
+                    // Do nothing - used only to enable unit testing
+                }
+
                 override fun onAuthCodeExchangedError(errorMessage: String?) {
                     showToast(errorMessage ?: "Error exchanging auth code")
                 }
@@ -64,10 +78,7 @@ class MainActivity : ComponentActivity() {
                 Button(onClick = { mainViewModel.startAuthFlow(authorizationLauncher) }) {
                     Text("Login with MyAnimeList")
                 }
-                // Display the access token if available
-                accessToken?.let {
-                    Text("Access Token: $it")
-                }
+                Text("Access Token: ${if (accessToken.isNullOrEmpty()) "Not available" else "Available"}")
             }
         }
     }
