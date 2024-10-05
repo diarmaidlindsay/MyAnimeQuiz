@@ -6,10 +6,12 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.diarmaidlindsay.myanimequiz.data.repository.UserPreferencesRepository
+import com.github.diarmaidlindsay.myanimequiz.domain.model.AuthState
 import com.github.diarmaidlindsay.myanimequiz.domain.usecase.AuthUseCase
-import com.github.diarmaidlindsay.myanimequiz.ui.callbacks.AuthCodeExchangedCallback
-import com.github.diarmaidlindsay.myanimequiz.ui.callbacks.AuthResponseHandledCallback
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,21 +22,17 @@ class MainViewModel @Inject constructor(
 
     val accessToken = userPreferencesRepository.accessToken
 
+    private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
+    val authState: StateFlow<AuthState> = _authState
+
     fun startAuthFlow(authorizationLauncher: ActivityResultLauncher<Intent>) {
         authUseCase.startAuthFlow(authorizationLauncher)
     }
 
-    fun handleAuthResponse(
-        result: ActivityResult,
-        authResponseHandledCallback: AuthResponseHandledCallback,
-        authCodeExchangedCallback: AuthCodeExchangedCallback
-    ) {
-        authUseCase.handleAuthResponse(
-            result,
-            authResponseHandledCallback,
-            authCodeExchangedCallback,
-            viewModelScope
-        )
+    fun handleAuthResponse(result: ActivityResult) {
+        authUseCase.handleAuthResponse(result, viewModelScope) { state ->
+            _authState.update { state }
+        }
     }
 
     fun checkTokenExpiry() {

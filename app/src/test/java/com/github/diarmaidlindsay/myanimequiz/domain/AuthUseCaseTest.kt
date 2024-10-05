@@ -1,5 +1,6 @@
 package com.github.diarmaidlindsay.myanimequiz.domain
 
+import android.app.Activity.RESULT_CANCELED
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.net.Uri
@@ -8,10 +9,9 @@ import com.github.diarmaidlindsay.myanimequiz.QuizApplication
 import com.github.diarmaidlindsay.myanimequiz.data.factory.AuthorizationExceptionFactory
 import com.github.diarmaidlindsay.myanimequiz.data.factory.AuthorizationResponseFactory
 import com.github.diarmaidlindsay.myanimequiz.data.repository.UserPreferencesRepository
+import com.github.diarmaidlindsay.myanimequiz.domain.model.AuthState
 import com.github.diarmaidlindsay.myanimequiz.domain.service.IAuthorizationService
 import com.github.diarmaidlindsay.myanimequiz.domain.usecase.AuthUseCase
-import com.github.diarmaidlindsay.myanimequiz.ui.callbacks.AuthCodeExchangedCallback
-import com.github.diarmaidlindsay.myanimequiz.ui.callbacks.AuthResponseHandledCallback
 import com.github.diarmaidlindsay.myanimequiz.utils.Constants
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -46,8 +46,6 @@ class AuthUseCaseTest {
     private lateinit var authUseCase: AuthUseCase
     private lateinit var authService: IAuthorizationService
     private lateinit var userPreferencesRepository: UserPreferencesRepository
-    private lateinit var authResponseHandledCallback: AuthResponseHandledCallback
-    private lateinit var authCodeExchangedCallback: AuthCodeExchangedCallback
     private lateinit var authorizationResponseFactory: AuthorizationResponseFactory
     private lateinit var authorizationExceptionFactory: AuthorizationExceptionFactory
     private lateinit var testScope: TestScope
@@ -56,8 +54,6 @@ class AuthUseCaseTest {
     fun setUp() {
         authService = mockk()
         userPreferencesRepository = mockk()
-        authResponseHandledCallback = mockk()
-        authCodeExchangedCallback = mockk()
         authorizationResponseFactory = mockk()
         authorizationExceptionFactory = mockk()
         testScope = TestScope()
@@ -82,21 +78,26 @@ class AuthUseCaseTest {
 
         setupAuthResponseFactory(authResponse)
         setupAuthService(tokenResponse)
-        setupCallbacks()
+
+        coEvery { userPreferencesRepository.saveTokens(any()) } just Runs
+        every { QuizApplication.accessToken = "accessToken" } just Runs
+
+        var authState: AuthState? = null
 
         // Call the method under test
-        authUseCase.handleAuthResponse(
-            result,
-            authResponseHandledCallback,
-            authCodeExchangedCallback,
-            this
-        )
+        authUseCase.handleAuthResponse(result, this) { state ->
+            authState = state
+        }
 
         // Ensure all coroutines complete
         advanceUntilIdle()
 
-        // Verify interactions
-        verifySuccessfulAuthorization()
+        // Verify state
+        assert(authState is AuthState.Success)
+
+        //Verify tokens saved
+        coVerify { userPreferencesRepository.saveTokens(any()) }
+        verify { QuizApplication.accessToken = "accessToken" }
     }
 
     @Test
@@ -109,21 +110,19 @@ class AuthUseCaseTest {
         )
 
         setupAuthExceptionFactory(authException)
-        every { authResponseHandledCallback.onAuthError(any()) } just Runs
+
+        var authState: AuthState? = null
 
         // Call the method under test
-        authUseCase.handleAuthResponse(
-            result,
-            authResponseHandledCallback,
-            authCodeExchangedCallback,
-            this
-        )
+        authUseCase.handleAuthResponse(result, this) { state ->
+            authState = state
+        }
 
         // Ensure all coroutines complete
         advanceUntilIdle()
 
-        // Verify interactions
-        verify { authResponseHandledCallback.onAuthError(any()) }
+        // Verify state
+        assert(authState is AuthState.Error)
     }
 
     @Test
@@ -138,22 +137,19 @@ class AuthUseCaseTest {
 
         setupAuthResponseFactory(authResponse)
         setupAuthService(null, tokenException)
-        every { authCodeExchangedCallback.onAuthCodeExchangedError(any()) } just Runs
-        every { authResponseHandledCallback.onAuthSuccess() } just Runs
+
+        var authState: AuthState? = null
 
         // Call the method under test
-        authUseCase.handleAuthResponse(
-            result,
-            authResponseHandledCallback,
-            authCodeExchangedCallback,
-            this
-        )
+        authUseCase.handleAuthResponse(result, this) { state ->
+            authState = state
+        }
 
         // Ensure all coroutines complete
         advanceUntilIdle()
 
-        // Verify interactions
-        verify { authCodeExchangedCallback.onAuthCodeExchangedError(any()) }
+        // Verify state
+        assert(authState is AuthState.Error)
     }
 
     @Test
@@ -164,22 +160,19 @@ class AuthUseCaseTest {
 
         setupAuthResponseFactory(authResponse)
         setupAuthService(null)
-        every { authCodeExchangedCallback.onAuthCodeExchangedError(any()) } just Runs
-        every { authResponseHandledCallback.onAuthSuccess() } just Runs
+
+        var authState: AuthState? = null
 
         // Call the method under test
-        authUseCase.handleAuthResponse(
-            result,
-            authResponseHandledCallback,
-            authCodeExchangedCallback,
-            this
-        )
+        authUseCase.handleAuthResponse(result, this) { state ->
+            authState = state
+        }
 
         // Ensure all coroutines complete
         advanceUntilIdle()
 
-        // Verify interactions
-        verify { authCodeExchangedCallback.onAuthCodeExchangedError(any()) }
+        // Verify state
+        assert(authState is AuthState.Error)
     }
 
     @Test
@@ -199,6 +192,46 @@ class AuthUseCaseTest {
 
         // Verify interactions
         coVerify { userPreferencesRepository.saveTokens(any()) }
+    }
+
+    @Test
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun `handleAuthResponse should handle authorization flow cancellation`() = testScope.runTest {
+        val result = createActivityResult(RESULT_CANCELED)
+
+        var authState: AuthState? = null
+
+        // Call the method under test
+        authUseCase.handleAuthResponse(result, this) { state ->
+            authState = state
+        }
+
+        // Ensure all coroutines complete
+        advanceUntilIdle()
+
+        // Verify state
+        assert(authState is AuthState.Error)
+        assert((authState as AuthState.Error).message == "Authorization flow was cancelled")
+    }
+
+    @Test
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun `handleAuthResponse should handle unexpected result code`() = testScope.runTest {
+        val result = createActivityResult(12345) // Some unexpected result code
+
+        var authState: AuthState? = null
+
+        // Call the method under test
+        authUseCase.handleAuthResponse(result, this) { state ->
+            authState = state
+        }
+
+        // Ensure all coroutines complete
+        advanceUntilIdle()
+
+        // Verify state
+        assert(authState is AuthState.Error)
+        assert((authState as AuthState.Error).message == "Unexpected result code: 12345")
     }
 
     @Test
@@ -245,19 +278,6 @@ class AuthUseCaseTest {
                 tokenException
             )
         }
-    }
-
-    private fun setupCallbacks() {
-        coEvery { userPreferencesRepository.saveTokens(any()) } just Runs
-        every { QuizApplication.accessToken = "accessToken" } just Runs
-        every { authCodeExchangedCallback.onAuthCodeExchangedSuccess() } just Runs
-        every { authResponseHandledCallback.onAuthSuccess() } just Runs
-    }
-
-    private fun verifySuccessfulAuthorization() {
-        verify { authCodeExchangedCallback.onAuthCodeExchangedSuccess() }
-        coVerify { userPreferencesRepository.saveTokens(any()) }
-        verify { QuizApplication.accessToken = "accessToken" }
     }
 
     private fun createActivityResult(resultCode: Int): ActivityResult {

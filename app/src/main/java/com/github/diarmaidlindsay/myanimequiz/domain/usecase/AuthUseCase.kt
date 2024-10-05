@@ -12,9 +12,8 @@ import com.github.diarmaidlindsay.myanimequiz.data.factory.AuthorizationExceptio
 import com.github.diarmaidlindsay.myanimequiz.data.factory.AuthorizationResponseFactory
 import com.github.diarmaidlindsay.myanimequiz.data.model.AccessToken
 import com.github.diarmaidlindsay.myanimequiz.data.repository.UserPreferencesRepository
+import com.github.diarmaidlindsay.myanimequiz.domain.model.AuthState
 import com.github.diarmaidlindsay.myanimequiz.domain.service.IAuthorizationService
-import com.github.diarmaidlindsay.myanimequiz.ui.callbacks.AuthCodeExchangedCallback
-import com.github.diarmaidlindsay.myanimequiz.ui.callbacks.AuthResponseHandledCallback
 import com.github.diarmaidlindsay.myanimequiz.utils.Constants
 import com.github.diarmaidlindsay.myanimequiz.utils.PkceGenerator
 import kotlinx.coroutines.CoroutineScope
@@ -63,9 +62,8 @@ class AuthUseCase @Inject constructor(
 
     fun handleAuthResponse(
         result: ActivityResult,
-        authResponseHandledCallback: AuthResponseHandledCallback,
-        authCodeExchangedCallback: AuthCodeExchangedCallback,
-        scope: CoroutineScope
+        scope: CoroutineScope,
+        updateAuthState: (AuthState) -> Unit
     ) {
         if (result.resultCode == RESULT_OK) {
             val data = result.data
@@ -73,28 +71,35 @@ class AuthUseCase @Inject constructor(
             val ex = data?.let { authorizationExceptionFactory.fromIntent(it) }
 
             if (response != null) {
-                authResponseHandledCallback.onAuthSuccess()
-                exchangeAuthorizationCode(response, authCodeExchangedCallback, scope)
+                updateAuthState(AuthState.Success)
+                exchangeAuthorizationCode(response, scope, updateAuthState)
             } else if (ex != null) {
                 Timber.e("AuthorizationException: $ex")
-                authResponseHandledCallback.onAuthError(
-                    ex.error ?: ex.errorDescription ?: "Unknown Error"
-                )
+                updateAuthState(AuthState.Error(ex.error ?: ex.errorDescription ?: "Unknown Error"))
             } else {
-                authResponseHandledCallback.onAuthError("AuthorizationResponse is null")
+                "AuthorizationResponse is null".let { errorMessage ->
+                    Timber.e(errorMessage)
+                    updateAuthState(AuthState.Error(errorMessage))
+                }
+
             }
         } else if (result.resultCode == RESULT_CANCELED) {
-            Timber.d("Authorization flow was cancelled")
-            authResponseHandledCallback.onAuthError("Authorization flow was cancelled")
+            "Authorization flow was cancelled".let { errorMessage ->
+                Timber.d(errorMessage)
+                updateAuthState(AuthState.Error(errorMessage))
+            }
         } else {
-            Timber.e("Unexpected result code: ${result.resultCode}")
+            "Unexpected result code: ${result.resultCode}".let { errorMessage ->
+                Timber.e(errorMessage)
+                updateAuthState(AuthState.Error(errorMessage))
+            }
         }
     }
 
     private fun exchangeAuthorizationCode(
         response: AuthorizationResponse,
-        authCodeExchangedCallback: AuthCodeExchangedCallback,
-        scope: CoroutineScope
+        scope: CoroutineScope,
+        updateAuthState: (AuthState) -> Unit
     ) {
         val tokenRequest = response.createTokenExchangeRequest()
 
@@ -109,12 +114,12 @@ class AuthUseCase @Inject constructor(
                 scope.launch {
                     saveAccessToken(accessToken)
                 }
-                authCodeExchangedCallback.onAuthCodeExchangedSuccess()
+                updateAuthState(AuthState.Success)
                 Timber.d("AccessToken: $accessToken")
             } else {
                 val error = ex?.error ?: ex?.errorDescription ?: "Unknown error"
                 Timber.e("Token exchange failed: $error")
-                authCodeExchangedCallback.onAuthCodeExchangedError(error)
+                updateAuthState(AuthState.Error(error))
             }
         }
     }

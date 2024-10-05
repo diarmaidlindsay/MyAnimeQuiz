@@ -18,9 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.diarmaidlindsay.myanimequiz.QuizApplication
+import com.github.diarmaidlindsay.myanimequiz.domain.model.AuthState
 import com.github.diarmaidlindsay.myanimequiz.extensions.showToast
-import com.github.diarmaidlindsay.myanimequiz.ui.callbacks.AuthCodeExchangedCallback
-import com.github.diarmaidlindsay.myanimequiz.ui.callbacks.AuthResponseHandledCallback
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -41,34 +40,20 @@ class MainActivity : ComponentActivity() {
             val accessTokenState =
                 mainViewModel.accessToken.collectAsStateWithLifecycle(QuizApplication.accessToken)
             val accessToken = accessTokenState.value
-            AnimeQuizAppUI(mainViewModel, accessToken)
+            val authState = mainViewModel.authState.collectAsStateWithLifecycle().value
+
+            AnimeQuizAppUI(mainViewModel, accessToken, authState)
         }
 
         authorizationLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
-            mainViewModel.handleAuthResponse(result, object : AuthResponseHandledCallback {
-                override fun onAuthSuccess() {
-                    // Do nothing - used only to enable unit testing
-                }
-
-                override fun onAuthError(errorMessage: String?) {
-                    showToast(errorMessage ?: "Error handling auth response")
-                }
-            }, object : AuthCodeExchangedCallback {
-                override fun onAuthCodeExchangedSuccess() {
-                    // Do nothing - used only to enable unit testing
-                }
-
-                override fun onAuthCodeExchangedError(errorMessage: String?) {
-                    showToast(errorMessage ?: "Error exchanging auth code")
-                }
-            })
+            mainViewModel.handleAuthResponse(result)
         }
     }
 
     @Composable
-    fun AnimeQuizAppUI(mainViewModel: MainViewModel, accessToken: String?) {
+    fun AnimeQuizAppUI(mainViewModel: MainViewModel, accessToken: String?, authState: AuthState) {
         MaterialTheme {
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -79,6 +64,19 @@ class MainActivity : ComponentActivity() {
                     Text("Login with MyAnimeList")
                 }
                 Text("Access Token: ${if (accessToken.isNullOrEmpty()) "Not available" else "Available"}")
+                when (authState) {
+                    is AuthState.Success -> {
+                        // Handle success state
+                    }
+
+                    is AuthState.Error -> {
+                        showToast(authState.message ?: "Error in AuthState")
+                    }
+
+                    AuthState.Idle -> {
+                        // Handle idle state
+                    }
+                }
             }
         }
     }
