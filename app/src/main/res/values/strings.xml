@@ -3,4 +3,7 @@
     <string name="romaji">Romaji</string>
     <string name="english">English</string>
     <string name="japanese">Japanese</string>
+    <string name="theme_system">Follow System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
 </resources>

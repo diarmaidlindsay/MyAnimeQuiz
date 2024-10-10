@@ -8,7 +8,6 @@ import timber.log.Timber
 @HiltAndroidApp
 class QuizApplication : Application() {
     companion object {
-        var accessToken: String? = null
         var titleLanguage = TitleLanguage.ROMAJI
     }
 

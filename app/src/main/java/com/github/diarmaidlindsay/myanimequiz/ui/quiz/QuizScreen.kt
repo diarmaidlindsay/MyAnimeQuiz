@@ -1,4 +1,9 @@
 package com.github.diarmaidlindsay.myanimequiz.ui.quiz
 
-class QuizScreen {
+import androidx.compose.runtime.Composable
+
+@Composable
+fun QuizScreen() {
+    // Quiz
+    // Back
 }

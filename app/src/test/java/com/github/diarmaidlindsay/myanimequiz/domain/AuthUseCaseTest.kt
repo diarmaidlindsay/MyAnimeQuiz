@@ -5,7 +5,6 @@ import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.result.ActivityResult
-import com.github.diarmaidlindsay.myanimequiz.QuizApplication
 import com.github.diarmaidlindsay.myanimequiz.data.factory.AuthorizationExceptionFactory
 import com.github.diarmaidlindsay.myanimequiz.data.factory.AuthorizationResponseFactory
 import com.github.diarmaidlindsay.myanimequiz.data.repository.UserPreferencesRepository
@@ -19,8 +18,6 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
@@ -50,6 +47,8 @@ class AuthUseCaseTest {
     private lateinit var authorizationExceptionFactory: AuthorizationExceptionFactory
     private lateinit var testScope: TestScope
 
+    private var authState: AuthState? = null
+
     @Before
     fun setUp() {
         authService = mockk()
@@ -64,9 +63,10 @@ class AuthUseCaseTest {
             authorizationResponseFactory,
             authorizationExceptionFactory
         )
+    }
 
-        // Mock static fields
-        mockkObject(QuizApplication.Companion)
+    private val updateAuthState: (AuthState) -> Unit = { state ->
+        authState = state
     }
 
     @Test
@@ -80,14 +80,9 @@ class AuthUseCaseTest {
         setupAuthService(tokenResponse)
 
         coEvery { userPreferencesRepository.saveTokens(any()) } just Runs
-        every { QuizApplication.accessToken = "accessToken" } just Runs
-
-        var authState: AuthState? = null
 
         // Call the method under test
-        authUseCase.handleAuthResponse(result, this) { state ->
-            authState = state
-        }
+        authUseCase.handleAuthResponse(result, this, updateAuthState)
 
         // Ensure all coroutines complete
         advanceUntilIdle()
@@ -97,7 +92,6 @@ class AuthUseCaseTest {
 
         //Verify tokens saved
         coVerify { userPreferencesRepository.saveTokens(any()) }
-        verify { QuizApplication.accessToken = "accessToken" }
     }
 
     @Test
@@ -111,12 +105,8 @@ class AuthUseCaseTest {
 
         setupAuthExceptionFactory(authException)
 
-        var authState: AuthState? = null
-
         // Call the method under test
-        authUseCase.handleAuthResponse(result, this) { state ->
-            authState = state
-        }
+        authUseCase.handleAuthResponse(result, this, updateAuthState)
 
         // Ensure all coroutines complete
         advanceUntilIdle()
@@ -138,12 +128,8 @@ class AuthUseCaseTest {
         setupAuthResponseFactory(authResponse)
         setupAuthService(null, tokenException)
 
-        var authState: AuthState? = null
-
         // Call the method under test
-        authUseCase.handleAuthResponse(result, this) { state ->
-            authState = state
-        }
+        authUseCase.handleAuthResponse(result, this, updateAuthState)
 
         // Ensure all coroutines complete
         advanceUntilIdle()
@@ -161,12 +147,8 @@ class AuthUseCaseTest {
         setupAuthResponseFactory(authResponse)
         setupAuthService(null)
 
-        var authState: AuthState? = null
-
         // Call the method under test
-        authUseCase.handleAuthResponse(result, this) { state ->
-            authState = state
-        }
+        authUseCase.handleAuthResponse(result, this, updateAuthState)
 
         // Ensure all coroutines complete
         advanceUntilIdle()
@@ -199,12 +181,8 @@ class AuthUseCaseTest {
     fun `handleAuthResponse should handle authorization flow cancellation`() = testScope.runTest {
         val result = createActivityResult(RESULT_CANCELED)
 
-        var authState: AuthState? = null
-
         // Call the method under test
-        authUseCase.handleAuthResponse(result, this) { state ->
-            authState = state
-        }
+        authUseCase.handleAuthResponse(result, this, updateAuthState)
 
         // Ensure all coroutines complete
         advanceUntilIdle()
@@ -219,12 +197,8 @@ class AuthUseCaseTest {
     fun `handleAuthResponse should handle unexpected result code`() = testScope.runTest {
         val result = createActivityResult(12345) // Some unexpected result code
 
-        var authState: AuthState? = null
-
         // Call the method under test
-        authUseCase.handleAuthResponse(result, this) { state ->
-            authState = state
-        }
+        authUseCase.handleAuthResponse(result, this, updateAuthState)
 
         // Ensure all coroutines complete
         advanceUntilIdle()
@@ -237,14 +211,16 @@ class AuthUseCaseTest {
     @Test
     @OptIn(ExperimentalCoroutinesApi::class)
     fun `checkTokenExpiry should refresh token if expiring soon`() = testScope.runTest {
+        val accessToken = "accessToken"
         val refreshToken = "refreshToken"
         val tokenResponse = getSampleTokenResponse()
         val expiryDate = Calendar.getInstance().apply {
-            add(Calendar.DAY_OF_YEAR, -Constants.ONE_WEEK_DAYS + 1)
+            add(Calendar.DAY_OF_YEAR, Constants.ONE_WEEK_DAYS - 1)
         }.time.time
 
         every { userPreferencesRepository.tokenExpiryDate } returns flowOf(expiryDate)
         every { userPreferencesRepository.refreshToken } returns flowOf(refreshToken)
+        every { userPreferencesRepository.accessToken } returns flowOf(accessToken)
         setupAuthService(tokenResponse)
         coEvery { userPreferencesRepository.saveTokens(any()) } just Runs
 
@@ -257,6 +233,96 @@ class AuthUseCaseTest {
         // Verify interactions
         coVerify { userPreferencesRepository.saveTokens(any()) }
     }
+
+    @Test
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun `checkTokenExpiry should log out if token has already expired`() = testScope.runTest {
+        val accessToken = "accessToken"
+        val refreshToken = "refreshToken"
+        val expiryDate = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, -1) // Set expiry date to yesterday
+        }.time.time
+
+        every { userPreferencesRepository.tokenExpiryDate } returns flowOf(expiryDate)
+        every { userPreferencesRepository.refreshToken } returns flowOf(refreshToken)
+        every { userPreferencesRepository.accessToken } returns flowOf(accessToken)
+        coEvery { userPreferencesRepository.removeTokens() } just Runs
+
+        // Call the method under test
+        authUseCase.checkTokenExpiry(this)
+
+        // Ensure all coroutines complete
+        advanceUntilIdle()
+
+        // Verify interactions
+        coVerify { userPreferencesRepository.removeTokens() }
+    }
+
+    @Test
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun `checkTokenExpiry should not refresh token if not expiring soon`() = testScope.runTest {
+        val accessToken = "accessToken"
+        val refreshToken = "refreshToken"
+        val expiryDate = Calendar.getInstance().apply {
+            add(
+                Calendar.DAY_OF_YEAR,
+                Constants.ONE_WEEK_DAYS + 1
+            ) // Set expiry date to more than one week from now
+        }.time.time
+
+        every { userPreferencesRepository.tokenExpiryDate } returns flowOf(expiryDate)
+        every { userPreferencesRepository.refreshToken } returns flowOf(refreshToken)
+        every { userPreferencesRepository.accessToken } returns flowOf(accessToken)
+
+        // Call the method under test
+        authUseCase.checkTokenExpiry(this)
+
+        // Ensure all coroutines complete
+        advanceUntilIdle()
+
+        // Verify no interactions with saveTokens
+        coVerify(exactly = 0) { userPreferencesRepository.saveTokens(any()) }
+    }
+
+    @Test
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun `checkTokenExpiry should log out if access token exists but expiry date or refresh token is null`() =
+        testScope.runTest {
+            val accessToken = "accessToken"
+
+            every { userPreferencesRepository.tokenExpiryDate } returns flowOf(null)
+            every { userPreferencesRepository.refreshToken } returns flowOf(null)
+            every { userPreferencesRepository.accessToken } returns flowOf(accessToken)
+            coEvery { userPreferencesRepository.removeTokens() } just Runs
+
+            // Call the method under test
+            authUseCase.checkTokenExpiry(this)
+
+            // Ensure all coroutines complete
+            advanceUntilIdle()
+
+            // Verify interactions
+            coVerify { userPreferencesRepository.removeTokens() }
+        }
+
+    @Test
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun `checkTokenExpiry should log error if expiry date or refresh token is null`() =
+        testScope.runTest {
+            every { userPreferencesRepository.tokenExpiryDate } returns flowOf(null)
+            every { userPreferencesRepository.refreshToken } returns flowOf(null)
+            every { userPreferencesRepository.accessToken } returns flowOf(null)
+
+            // Call the method under test
+            authUseCase.checkTokenExpiry(this)
+
+            // Ensure all coroutines complete
+            advanceUntilIdle()
+
+            // Verify no interactions with saveTokens or removeTokens
+            coVerify(exactly = 0) { userPreferencesRepository.saveTokens(any()) }
+            coVerify(exactly = 0) { userPreferencesRepository.removeTokens() }
+        }
 
     private fun setupAuthResponseFactory(authResponse: AuthorizationResponse) {
         every { authorizationResponseFactory.fromIntent(any()) } returns authResponse

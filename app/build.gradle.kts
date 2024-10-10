@@ -90,6 +90,8 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.timber)
+    implementation(libs.lottie.compose)
+    implementation(libs.androidx.navigation.compose)
     kapt(libs.hilt.android.compiler)
     testImplementation(libs.junit)
     testImplementation(libs.mockk.android)
