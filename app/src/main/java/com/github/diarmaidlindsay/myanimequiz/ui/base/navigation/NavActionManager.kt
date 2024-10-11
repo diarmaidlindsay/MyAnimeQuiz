@@ -15,7 +15,12 @@ class NavActionManager(
     }
 
     fun toMain() {
-        navController.navigate(Route.Home)
+        navController.navigate(Route.Home) {
+            popUpTo(navController.graph.startDestinationId) {
+                inclusive = true
+            }
+            launchSingleTop = true
+        }
     }
 
     fun toLogin() {
