@@ -22,19 +22,18 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.diarmaidlindsay.myanimequiz.R
 import com.github.diarmaidlindsay.myanimequiz.domain.model.AuthState
-import com.github.diarmaidlindsay.myanimequiz.ui.base.navigation.NavActionManager
+import com.github.diarmaidlindsay.myanimequiz.ui.composables.LoadingScreen
 import com.github.diarmaidlindsay.myanimequiz.ui.theme.MyAnimeQuizTheme
+import timber.log.Timber
 
 // LoginScreen.kt
 @Composable
 fun LoginScreen(
-    navActionManager: NavActionManager,
     authState: AuthState,
     startAuthFlow: () -> Unit,
     showToast: (String) -> Unit
 ) {
     LoginScreenContent(
-        navActionManager = navActionManager,
         startAuthFlow = startAuthFlow,
         authState = authState,
         showToast = showToast
@@ -43,47 +42,40 @@ fun LoginScreen(
 
 @Composable
 fun LoginScreenContent(
-    navActionManager: NavActionManager,
     startAuthFlow: () -> Unit,
     authState: AuthState,
     showToast: (String) -> Unit
 ) {
-    val jellyfishAnimation by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.jellyfish))
-    Surface {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp),
-                contentAlignment = Alignment.Center
+    if (authState is AuthState.Success) {
+        LoadingScreen() //While saving the authToken asynchronously
+    } else {
+        val jellyfishAnimation by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.jellyfish))
+        Surface {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                LottieAnimation(
-                    composition = jellyfishAnimation,
-                    modifier = Modifier.fillMaxWidth(),
-                    iterations = LottieConstants.IterateForever,
-                    clipToCompositionBounds = true
-                )
-            }
-
-            Button(onClick = startAuthFlow) {
-                Text("Login with MyAnimeList")
-            }
-            when (authState) {
-                is AuthState.Success -> {
-                    // Navigate to MainScreen
-                    navActionManager.toMain()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    LottieAnimation(
+                        composition = jellyfishAnimation,
+                        modifier = Modifier.fillMaxWidth(),
+                        iterations = LottieConstants.IterateForever,
+                        clipToCompositionBounds = true
+                    )
                 }
 
-                is AuthState.Error -> {
+                Button(onClick = startAuthFlow) {
+                    Text("Login with MyAnimeList")
+                }
+                if (authState is AuthState.Error) {
+                    Timber.d("Login Screen : Error in AuthState")
                     showToast(authState.message ?: "Error in AuthState")
-                }
-
-                AuthState.Idle -> {
-                    // Handle idle state
                 }
             }
         }
@@ -95,7 +87,6 @@ fun LoginScreenContent(
 fun LoginScreenPreview() {
     MyAnimeQuizTheme {
         LoginScreenContent(
-            navActionManager = NavActionManager.rememberNavActionManager(),
             startAuthFlow = { },
             authState = AuthState.Idle,
             showToast = { }

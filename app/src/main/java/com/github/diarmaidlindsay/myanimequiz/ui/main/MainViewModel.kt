@@ -20,7 +20,9 @@ class MainViewModel @Inject constructor(
     userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
-    val accessToken = userPreferencesRepository.accessToken
+    val accessToken: StateFlow<String?> = userPreferencesRepository.accessToken
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState
 

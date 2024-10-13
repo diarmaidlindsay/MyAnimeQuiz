@@ -14,25 +14,29 @@ class NavActionManager(
         navController.popBackStack()
     }
 
-    fun toMain() {
-        navController.navigate(Route.Home) {
-            popUpTo(navController.graph.startDestinationId) {
-                inclusive = true
+    fun toMain(clearBackStack: Boolean = false) {
+        navigateTo(Route.Home, clearBackStack)
+    }
+
+    fun toLogin(clearBackStack: Boolean = false) {
+        navigateTo(Route.Login, clearBackStack)
+    }
+
+    fun toQuiz(clearBackStack: Boolean = false) {
+        navigateTo(Route.Quiz, clearBackStack)
+    }
+
+    fun toHighScores(clearBackStack: Boolean = false) {
+        navigateTo(Route.HighScores, clearBackStack)
+    }
+
+    private fun navigateTo(route: Route, clearBackStack: Boolean) {
+        navController.navigate(route) {
+            if (clearBackStack) {
+                popUpTo(0) { inclusive = true }
             }
             launchSingleTop = true
         }
-    }
-
-    fun toLogin() {
-        navController.navigate(Route.Login)
-    }
-
-    fun toQuiz() {
-        navController.navigate(Route.Quiz)
-    }
-
-    fun toHighScores() {
-        navController.navigate(Route.HighScores)
     }
 
     companion object {

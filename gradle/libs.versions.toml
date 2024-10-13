@@ -1,7 +1,8 @@
 [versions]
-agp = "8.6.1"
+agp = "8.7.0"
 appauth = "0.11.1"
 datastorePreferences = "1.1.1"
+hiltNavigationCompose = "1.2.0"
 kotlin = "2.0.20"
 coreKtx = "1.13.1"
 junit = "4.13.2"
@@ -26,6 +27,7 @@ timber = "5.0.1"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 appauth = { module = "net.openid:appauth", version.ref = "appauth" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

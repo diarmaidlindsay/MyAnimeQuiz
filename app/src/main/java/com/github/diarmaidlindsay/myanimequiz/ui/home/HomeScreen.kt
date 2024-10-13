@@ -14,15 +14,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.diarmaidlindsay.myanimequiz.R
 import com.github.diarmaidlindsay.myanimequiz.ui.base.navigation.NavActionManager
+import com.github.diarmaidlindsay.myanimequiz.ui.theme.MyAnimeQuizTheme
 
 @Composable
 fun HomeScreen(navActionManager: NavActionManager) {
+    val homeViewModel: HomeViewModel = hiltViewModel()
+
+    HomeScreenContent(navActionManager = navActionManager, logout = homeViewModel::logout)
+}
+
+@Composable
+fun HomeScreenContent(
+    navActionManager: NavActionManager,
+    logout: () -> Unit
+) {
     val quizAnimation by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.quiz))
 
     Column(
@@ -58,7 +70,7 @@ fun HomeScreen(navActionManager: NavActionManager) {
         ) {
             HomeButton(text = "Start Quiz", onClick = { navActionManager.toQuiz() })
             HomeButton(text = "High Scores", onClick = { navActionManager.toHighScores() })
-            HomeButton(text = "Logout", onClick = { navActionManager.toLogin() })
+            HomeButton(text = "Logout", onClick = { logout() })
             HomeButton(text = "Settings", onClick = { /* Navigate to Settings */ })
             HomeButton(text = "About", onClick = { /* Navigate to About */ })
             HomeButton(text = "Privacy Policy", onClick = { /* Navigate to Privacy Policy */ })
@@ -71,7 +83,11 @@ fun HomeButton(
     text: String,
     onClick: () -> Unit
 ) {
-    Button(onClick = onClick) {
+    Button(
+        onClick = onClick, modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
         Text(text = text)
     }
 }
@@ -79,5 +95,9 @@ fun HomeButton(
 @Preview
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen(navActionManager = NavActionManager.rememberNavActionManager())
+    MyAnimeQuizTheme {
+        HomeScreenContent(
+            navActionManager = NavActionManager.rememberNavActionManager(),
+            logout = {})
+    }
 }

@@ -218,6 +218,7 @@ class AuthUseCase @Inject constructor(
     }
 
     suspend fun logout() {
+        Timber.d("Logging out")
         userPreferencesRepository.removeTokens()
     }
 }

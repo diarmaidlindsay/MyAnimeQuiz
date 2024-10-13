@@ -12,6 +12,7 @@ import com.github.diarmaidlindsay.myanimequiz.ui.highscore.HighScoresScreen
 import com.github.diarmaidlindsay.myanimequiz.ui.home.HomeScreen
 import com.github.diarmaidlindsay.myanimequiz.ui.login.LoginScreen
 import com.github.diarmaidlindsay.myanimequiz.ui.quiz.QuizScreen
+import timber.log.Timber
 
 @Composable
 fun MainNavigation(
@@ -22,11 +23,13 @@ fun MainNavigation(
     startAuthFlow: () -> Unit,
     showToast: (String) -> Unit
 ) {
-    LaunchedEffect(Unit) {
+    LaunchedEffect(isLoggedIn) {
         if (isLoggedIn) {
-            navActionManager.toMain()
+            Timber.d("User is logged in, navigating to main screen")
+            navActionManager.toMain(clearBackStack = true)
         } else {
-            navActionManager.toLogin()
+            Timber.d("User is not logged in, navigating to login screen")
+            navActionManager.toLogin(clearBackStack = true)
         }
     }
 
@@ -34,7 +37,6 @@ fun MainNavigation(
         composable<Route.Home> { HomeScreen(navActionManager) }
         composable<Route.Login> {
             LoginScreen(
-                navActionManager = navActionManager,
                 authState = authState,
                 startAuthFlow = startAuthFlow,
                 showToast = showToast

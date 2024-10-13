@@ -5,18 +5,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -25,6 +23,7 @@ import com.github.diarmaidlindsay.myanimequiz.extensions.showToast
 import com.github.diarmaidlindsay.myanimequiz.ui.base.ThemeStyle
 import com.github.diarmaidlindsay.myanimequiz.ui.base.navigation.NavActionManager
 import com.github.diarmaidlindsay.myanimequiz.ui.base.navigation.NavActionManager.Companion.rememberNavActionManager
+import com.github.diarmaidlindsay.myanimequiz.ui.composables.LoadingScreen
 import com.github.diarmaidlindsay.myanimequiz.ui.login.LoginViewModel
 import com.github.diarmaidlindsay.myanimequiz.ui.theme.MyAnimeQuizTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -46,7 +45,7 @@ class MainActivity : ComponentActivity() {
         // Set the Compose UI
         setContent {
             val theme by mainViewModel.theme.collectAsStateWithLifecycle(initialValue = initialTheme)
-            var isLoading by remember { mutableStateOf(true) }
+            var isLoading by rememberSaveable { mutableStateOf(true) }
             val isDark =
                 if (theme == ThemeStyle.FOLLOW_SYSTEM) isSystemInDarkTheme() else theme == ThemeStyle.DARK
             val navController = rememberNavController()
@@ -58,15 +57,24 @@ class MainActivity : ComponentActivity() {
 
             // Check token expiry
             LaunchedEffect(Unit) {
+                Timber.d("Checking token expiry")
                 mainViewModel.checkTokenExpiry().join()
                 isLoading = false
             }
 
-            if (isLoading) {
-                Timber.d("Showing loading screen")
+            AnimatedVisibility(
+                visible = isLoading,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
                 LoadingScreen()
-            } else {
-                Timber.d("Showing app UI")
+            }
+
+            AnimatedVisibility(
+                visible = !isLoading,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
                 AnimeQuizAppUI(
                     navController,
                     navActionManager,
@@ -108,13 +116,6 @@ class MainActivity : ComponentActivity() {
                 showToast = showToast
             )
             //Navigation
-        }
-    }
-
-    @Composable
-    fun LoadingScreen() {
-        Box(modifier = Modifier.fillMaxSize()) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
     }
 }
