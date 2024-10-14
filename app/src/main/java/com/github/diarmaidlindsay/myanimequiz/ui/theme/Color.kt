@@ -9,9 +9,9 @@ val maq_theme_light_primaryContainer = Color(0xFFE2E7F4)
 val maq_theme_light_onPrimaryContainer = Color(0xFF00174E)
 
 // Secondary Colors (Orange)
-val maq_theme_light_secondary = Color(0xFFDA6A2A)
+val maq_theme_light_secondary = Color(0xFFFF9800)
 val maq_theme_light_onSecondary = Color.White
-val maq_theme_light_secondaryContainer = Color(0xFFFFD9C7)
+val maq_theme_light_secondaryContainer = Color(0xFFCDDC39)
 val maq_theme_light_onSecondaryContainer = Color(0xFF4A1800)
 
 // Tertiary Colors (Complementary accent colors, leaning towards soft grayish blue)
@@ -47,7 +47,7 @@ val maq_theme_dark_onPrimary = Color(0xFFE2E7F4)
 val maq_theme_dark_primaryContainer = Color(0xFF002979)
 val maq_theme_dark_onPrimaryContainer = Color(0xFFE2E7F4)
 
-val maq_theme_dark_secondary = Color(0xFFDA6A2A)
+val maq_theme_dark_secondary = Color(0xFFFF5722)
 val maq_theme_dark_onSecondary = Color.White
 val maq_theme_dark_secondaryContainer = Color(0xFF5E1700)
 val maq_theme_dark_onSecondaryContainer = Color(0xFFFFD9C7)

@@ -9,12 +9,16 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -107,15 +111,19 @@ class MainActivity : ComponentActivity() {
         isDark: Boolean
     ) {
         MyAnimeQuizTheme(darkTheme = isDark) {
-            MainNavigation(
-                navController = navController,
-                navActionManager = navActionManager,
-                isLoggedIn = isLoggedIn,
-                authState = authState,
-                startAuthFlow = startAuthFlow,
-                showToast = showToast
-            )
-            //Navigation
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                MainNavigation(
+                    navController = navController,
+                    navActionManager = navActionManager,
+                    isLoggedIn = isLoggedIn,
+                    authState = authState,
+                    startAuthFlow = startAuthFlow,
+                    showToast = showToast
+                )
+            }
         }
     }
 }
