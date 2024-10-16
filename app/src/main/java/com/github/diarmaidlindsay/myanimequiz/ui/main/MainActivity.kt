@@ -23,13 +23,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.github.diarmaidlindsay.myanimequiz.domain.model.AuthState
-import com.github.diarmaidlindsay.myanimequiz.extensions.showToast
 import com.github.diarmaidlindsay.myanimequiz.ui.base.ThemeStyle
 import com.github.diarmaidlindsay.myanimequiz.ui.base.navigation.NavActionManager
 import com.github.diarmaidlindsay.myanimequiz.ui.base.navigation.NavActionManager.Companion.rememberNavActionManager
 import com.github.diarmaidlindsay.myanimequiz.ui.composables.LoadingScreen
 import com.github.diarmaidlindsay.myanimequiz.ui.login.LoginViewModel
 import com.github.diarmaidlindsay.myanimequiz.ui.theme.MyAnimeQuizTheme
+import com.github.diarmaidlindsay.myanimequiz.utils.extensions.showToast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking

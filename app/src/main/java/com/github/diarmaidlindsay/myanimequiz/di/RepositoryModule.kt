@@ -2,6 +2,7 @@ package com.github.diarmaidlindsay.myanimequiz.di
 
 import com.github.diarmaidlindsay.myanimequiz.data.repository.QuizRepository
 import com.github.diarmaidlindsay.myanimequiz.data.repository.UserPreferencesRepository
+import com.github.diarmaidlindsay.myanimequiz.data.service.ApiService
 import com.github.diarmaidlindsay.myanimequiz.domain.usecase.AuthUseCase
 import com.github.diarmaidlindsay.myanimequiz.scopes.DatastoreScope
 import dagger.Module
@@ -24,9 +25,10 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideQuizRepository(
+        apiService: ApiService,
         authUseCase: AuthUseCase,
         userPreferencesRepository: UserPreferencesRepository, scope: DatastoreScope
     ): QuizRepository {
-        return QuizRepository(authUseCase, userPreferencesRepository, scope)
+        return QuizRepository(apiService, authUseCase, userPreferencesRepository, scope)
     }
 }

@@ -7,9 +7,9 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.github.diarmaidlindsay.myanimequiz.data.model.AccessToken
 import com.github.diarmaidlindsay.myanimequiz.di.USER_PREFERENCES_DATA_STORE
-import com.github.diarmaidlindsay.myanimequiz.extensions.getValue
-import com.github.diarmaidlindsay.myanimequiz.extensions.setValue
 import com.github.diarmaidlindsay.myanimequiz.ui.base.ThemeStyle
+import com.github.diarmaidlindsay.myanimequiz.utils.extensions.getValue
+import com.github.diarmaidlindsay.myanimequiz.utils.extensions.setValue
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Named

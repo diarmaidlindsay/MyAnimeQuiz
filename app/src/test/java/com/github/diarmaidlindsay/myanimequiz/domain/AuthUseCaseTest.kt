@@ -4,6 +4,7 @@ import android.app.Activity.RESULT_CANCELED
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import androidx.activity.result.ActivityResult
 import com.github.diarmaidlindsay.myanimequiz.data.factory.AuthorizationExceptionFactory
 import com.github.diarmaidlindsay.myanimequiz.data.factory.AuthorizationResponseFactory
@@ -35,9 +36,11 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import java.util.Calendar
 
 @RunWith(RobolectricTestRunner::class)
+@Config(sdk = [Build.VERSION_CODES.UPSIDE_DOWN_CAKE])
 class AuthUseCaseTest {
 
     private lateinit var authUseCase: AuthUseCase

@@ -1,4 +1,4 @@
-package com.github.diarmaidlindsay.myanimequiz.extensions
+package com.github.diarmaidlindsay.myanimequiz.utils.extensions
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences

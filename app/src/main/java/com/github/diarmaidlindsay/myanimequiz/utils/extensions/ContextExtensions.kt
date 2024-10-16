@@ -1,4 +1,4 @@
-package com.github.diarmaidlindsay.myanimequiz.extensions
+package com.github.diarmaidlindsay.myanimequiz.utils.extensions
 
 import android.content.Context
 import android.widget.Toast

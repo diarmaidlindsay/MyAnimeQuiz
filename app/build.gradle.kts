@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         applicationId = "com.github.diarmaidlindsay.myanimequiz"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -71,7 +71,13 @@ android {
     }
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/*"
+        }
+    }
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+            isIncludeAndroidResources = true
         }
     }
 }
@@ -87,6 +93,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.appauth)
     implementation(libs.retrofit)
+    implementation(libs.converter.kotlinx.serialization)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.room.runtime)
@@ -97,6 +104,7 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.lottie.compose)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.runtime.livedata)
     kapt(libs.hilt.android.compiler)
     testImplementation(libs.junit)
     testImplementation(libs.mockk.android)
