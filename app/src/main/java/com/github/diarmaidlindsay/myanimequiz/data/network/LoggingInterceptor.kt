@@ -37,3 +37,20 @@ class LoggingInterceptor : Interceptor {
         return response
     }
 }
+
+class CacheLoggingInterceptor : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val response = chain.proceed(chain.request())
+
+        val cacheResponse = response.cacheResponse()
+        val networkResponse = response.networkResponse()
+
+        if (cacheResponse != null) {
+            Timber.d("Response from cache")
+        } else if (networkResponse != null) {
+            Timber.d("Response from network")
+        }
+
+        return response
+    }
+}

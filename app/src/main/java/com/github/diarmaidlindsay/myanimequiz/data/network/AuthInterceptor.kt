@@ -1,4 +1,4 @@
-package com.github.diarmaidlindsay.myanimequiz.network
+package com.github.diarmaidlindsay.myanimequiz.data.network
 
 import com.github.diarmaidlindsay.myanimequiz.BuildConfig
 import com.github.diarmaidlindsay.myanimequiz.data.repository.UserPreferencesRepository
