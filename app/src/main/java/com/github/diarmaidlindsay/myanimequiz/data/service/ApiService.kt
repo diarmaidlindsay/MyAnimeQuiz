@@ -1,6 +1,6 @@
 package com.github.diarmaidlindsay.myanimequiz.data.service
 
-import com.github.diarmaidlindsay.myanimequiz.data.model.Response
+import com.github.diarmaidlindsay.myanimequiz.data.model.ApiResponse
 import com.github.diarmaidlindsay.myanimequiz.data.model.User
 import com.github.diarmaidlindsay.myanimequiz.data.model.anime.AnimeDetails
 import com.github.diarmaidlindsay.myanimequiz.data.model.anime.AnimeList
@@ -34,10 +34,10 @@ interface ApiService {
         @Query("offset") offset: Int?,
         @Query("nsfw") nsfw: Int,
         @Query("fields") fields: String?
-    ): Response<List<AnimeList>>
+    ): ApiResponse<List<AnimeList>>
 
     @GET
-    suspend fun getAnimeList(@Url url: String): Response<List<AnimeList>>
+    suspend fun getAnimeList(@Url url: String): ApiResponse<List<AnimeList>>
 
     @GET("${MAL_API_URL}anime/season/{year}/{season}")
     suspend fun getSeasonalAnime(
@@ -47,10 +47,10 @@ interface ApiService {
         @Query("limit") limit: Int,
         @Query("nsfw") nsfw: Int,
         @Query("fields") fields: String?
-    ): Response<List<AnimeSeasonal>>
+    ): ApiResponse<List<AnimeSeasonal>>
 
     @GET
-    suspend fun getSeasonalAnime(@Url url: String): Response<List<AnimeSeasonal>>
+    suspend fun getSeasonalAnime(@Url url: String): ApiResponse<List<AnimeSeasonal>>
 
     @GET("${MAL_API_URL}anime/ranking")
     suspend fun getAnimeRanking(
@@ -58,20 +58,20 @@ interface ApiService {
         @Query("limit") limit: Int,
         @Query("nsfw") nsfw: Int,
         @Query("fields") fields: String?
-    ): Response<List<AnimeRanking>>
+    ): ApiResponse<List<AnimeRanking>>
 
     @GET
-    suspend fun getAnimeRanking(@Url url: String): Response<List<AnimeRanking>>
+    suspend fun getAnimeRanking(@Url url: String): ApiResponse<List<AnimeRanking>>
 
     @GET("${MAL_API_URL}anime/suggestions")
     suspend fun getAnimeRecommendations(
         @Query("limit") limit: Int,
         @Query("nsfw") nsfw: Int,
         @Query("fields") fields: String?
-    ): Response<List<AnimeList>>
+    ): ApiResponse<List<AnimeList>>
 
     @GET
-    suspend fun getAnimeRecommendations(@Url url: String): Response<List<AnimeList>>
+    suspend fun getAnimeRecommendations(@Url url: String): ApiResponse<List<AnimeList>>
 
     @GET("${MAL_API_URL}users/@me/animelist")
     suspend fun getUserAnimeList(
@@ -80,10 +80,10 @@ interface ApiService {
         @Query("limit") limit: Int?,
         @Query("nsfw") nsfw: Int,
         @Query("fields") fields: String?
-    ): Response<List<UserAnimeList>>
+    ): ApiResponse<List<UserAnimeList>>
 
     @GET
-    suspend fun getUserAnimeList(@Url url: String): Response<List<UserAnimeList>>
+    suspend fun getUserAnimeList(@Url url: String): ApiResponse<List<UserAnimeList>>
 
     @FormUrlEncoded
     @PATCH("${MAL_API_URL}anime/{animeId}/my_list_status")
@@ -103,7 +103,7 @@ interface ApiService {
     ): MyAnimeListStatus
 
     @DELETE("anime/{animeId}/my_list_status")
-    suspend fun deleteAnimeEntry(@Path("animeId") animeId: Int): Response<Unit>
+    suspend fun deleteAnimeEntry(@Path("animeId") animeId: Int): ApiResponse<Unit>
 
     @GET("${MAL_API_URL}anime/{animeId}")
     suspend fun getAnimeDetails(
@@ -117,10 +117,10 @@ interface ApiService {
         @Query("limit") limit: Int?,
         @Query("offset") offset: Int?,
         @Query("fields") fields: String?
-    ): Response<List<Character>>
+    ): ApiResponse<List<Character>>
 
     @GET
-    suspend fun getAnimeCharacters(@Url url: String): Response<List<Character>>
+    suspend fun getAnimeCharacters(@Url url: String): ApiResponse<List<Character>>
 
     // Manga
     @GET("${MAL_API_URL}manga")
@@ -130,10 +130,10 @@ interface ApiService {
         @Query("offset") offset: Int?,
         @Query("nsfw") nsfw: Int,
         @Query("fields") fields: String?
-    ): Response<List<MangaList>>
+    ): ApiResponse<List<MangaList>>
 
     @GET
-    suspend fun getMangaList(@Url url: String): Response<List<MangaList>>
+    suspend fun getMangaList(@Url url: String): ApiResponse<List<MangaList>>
 
     @GET("${MAL_API_URL}users/@me/mangalist")
     suspend fun getUserMangaList(
@@ -142,10 +142,10 @@ interface ApiService {
         @Query("limit") limit: Int?,
         @Query("nsfw") nsfw: Int,
         @Query("fields") fields: String?
-    ): Response<List<UserMangaList>>
+    ): ApiResponse<List<UserMangaList>>
 
     @GET
-    suspend fun getUserMangaList(@Url url: String): Response<List<UserMangaList>>
+    suspend fun getUserMangaList(@Url url: String): ApiResponse<List<UserMangaList>>
 
     @GET("${MAL_API_URL}manga/ranking")
     suspend fun getMangaRanking(
@@ -153,10 +153,10 @@ interface ApiService {
         @Query("limit") limit: Int,
         @Query("nsfw") nsfw: Int,
         @Query("fields") fields: String?
-    ): Response<List<MangaRanking>>
+    ): ApiResponse<List<MangaRanking>>
 
     @GET
-    suspend fun getMangaRanking(@Url url: String): Response<List<MangaRanking>>
+    suspend fun getMangaRanking(@Url url: String): ApiResponse<List<MangaRanking>>
 
     @FormUrlEncoded
     @PATCH("${MAL_API_URL}manga/{mangaId}/my_list_status")
@@ -177,7 +177,7 @@ interface ApiService {
     ): MyMangaListStatus
 
     @DELETE("manga/{mangaId}/my_list_status")
-    suspend fun deleteMangaEntry(@Path("mangaId") mangaId: Int): Response<Unit>
+    suspend fun deleteMangaEntry(@Path("mangaId") mangaId: Int): ApiResponse<Unit>
 
     @GET("${MAL_API_URL}manga/{mangaId}")
     suspend fun getMangaDetails(
