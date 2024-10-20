@@ -2,14 +2,17 @@ package com.github.diarmaidlindsay.myanimequiz.data.repository
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.github.diarmaidlindsay.myanimequiz.data.model.AccessToken
 import com.github.diarmaidlindsay.myanimequiz.di.USER_PREFERENCES_DATA_STORE
 import com.github.diarmaidlindsay.myanimequiz.ui.base.ThemeStyle
+import com.github.diarmaidlindsay.myanimequiz.utils.extensions.NumExtensions.toInt
 import com.github.diarmaidlindsay.myanimequiz.utils.extensions.getValue
 import com.github.diarmaidlindsay.myanimequiz.utils.extensions.setValue
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Named
@@ -43,11 +46,25 @@ class UserPreferencesRepository @Inject constructor(@Named(USER_PREFERENCES_DATA
         }
     }
 
+    val nsfw = dataStore.getValue(NSFW_KEY, false)
+    suspend fun nsfwInt() = nsfw.first().toInt()
+    suspend fun setNsfw(value: Boolean) {
+        dataStore.setValue(NSFW_KEY, value)
+    }
+
+    val useBlackColors = dataStore.getValue(USE_BLACK_COLORS_KEY, false)
+    suspend fun setUseBlackColors(value: Boolean) {
+        dataStore.setValue(USE_BLACK_COLORS_KEY, value)
+    }
+
     companion object {
 
         private val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token")
         private val REFRESH_TOKEN_KEY = stringPreferencesKey("refresh_token")
         private val TOKEN_EXPIRY_DATE_KEY = longPreferencesKey("token_expiry_date")
+        private val NSFW_KEY = booleanPreferencesKey("nsfw")
+        private val LANG_KEY = stringPreferencesKey("lang")
         private val THEME_KEY = stringPreferencesKey("theme")
+        private val USE_BLACK_COLORS_KEY = booleanPreferencesKey("use_black_colors")
     }
 }

@@ -9,7 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.github.diarmaidlindsay.myanimequiz.data.model.anime.AnimeList
+import com.github.diarmaidlindsay.myanimequiz.data.model.anime.UserAnimeList
 
 @Composable
 fun QuizScreen() {
@@ -24,6 +24,6 @@ fun QuizScreen() {
 }
 
 @Composable
-fun AnimeItem(animeList: AnimeList) {
+fun AnimeItem(animeList: UserAnimeList) {
     Text(text = animeList.node.title)
 }
