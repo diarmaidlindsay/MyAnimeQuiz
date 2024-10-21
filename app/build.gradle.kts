@@ -129,7 +129,7 @@ kapt {
 sonarqube {
     properties {
         property("sonar.projectKey", "diarmaidlindsay_AnimeSphinx")
-        property("sonar.organization", "Diarmaid Lindsay")
+        property("sonar.organization", "diarmaidlindsay")
         property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.sourceEncoding", "UTF-8")
         property("sonar.sources", "src/main/java")

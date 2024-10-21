@@ -21,11 +21,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17.0.13+11'
 
+      - name: Create private.properties
+        run: echo 'CLIENT_ID="$(openssl rand -base64 24 | tr -dc A-Za-z0-9 | head -c 32)"' > private.properties
+
       - name: Run Lint
         run: ./gradlew lintDebug
 
       - name: Upload Lint Report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: lint-report
           path: app/build/reports/lint-results-debug.xml
@@ -43,11 +46,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17.0.13+11'
 
+      - name: Create private.properties
+        run: echo 'CLIENT_ID="$(openssl rand -base64 24 | tr -dc A-Za-z0-9 | head -c 32)"' > private.properties
+
       - name: Run Unit Tests
         run: ./gradlew test
 
       - name: Upload Test Report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: unit-test-report
           path: app/build/reports/tests/testDebugUnitTest/
@@ -64,8 +70,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17.0.13+11'
 
+      - name: Create private.properties
+        run: echo 'CLIENT_ID="$(openssl rand -base64 24 | tr -dc A-Za-z0-9 | head -c 32)"' > private.properties
+
       - name: SonarCloud Scan
-        run: ./gradlew sonarqube -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -82,11 +91,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17.0.13+11'
 
+      - name: Create private.properties
+        run: echo 'CLIENT_ID="$(openssl rand -base64 24 | tr -dc A-Za-z0-9 | head -c 32)"' > private.properties
+
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: android-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
