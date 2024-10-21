@@ -3,10 +3,10 @@ name: Android CI
 on:
   push:
     branches:
-      - main  # Trigger workflow when pushing to main branch
+      - origin/main  # Trigger workflow when pushing to main branch
   pull_request:
     branches:
-      - main  # Trigger workflow for pull requests targeting the main branch
+      - origin/main  # Trigger workflow for pull requests targeting the main branch
 
 jobs:
   lint: # Run lint checks
@@ -74,7 +74,7 @@ jobs:
         run: echo 'CLIENT_ID="$(openssl rand -base64 24 | tr -dc A-Za-z0-9 | head -c 32)"' > private.properties
 
       - name: SonarCloud Scan
-        run: ./gradlew sonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -98,7 +98,7 @@ jobs:
         run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: android-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
