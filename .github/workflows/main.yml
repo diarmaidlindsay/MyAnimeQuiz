@@ -3,10 +3,10 @@ name: Android CI
 on:
   push:
     branches:
-      - origin/main  # Trigger workflow when pushing to main branch
+      - main  # Trigger workflow when pushing to main branch
   pull_request:
     branches:
-      - origin/main  # Trigger workflow for pull requests targeting the main branch
+      - main  # Trigger workflow for pull requests targeting the main branch
 
 jobs:
   lint: # Run lint checks
