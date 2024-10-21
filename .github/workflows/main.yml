@@ -28,7 +28,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: lint-report
-          path: app/build/reports/lint-results-debug.txt
+          path: app/build/reports/lint-results-debug.xml
 
   unit-test: # Run unit tests
     needs: [ lint ]  # Run only after lint is done
