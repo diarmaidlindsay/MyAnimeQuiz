@@ -7,6 +7,7 @@ plugins {
     kotlin("plugin.serialization") version libs.versions.kotlin.get()
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("org.sonarqube") version "5.1.0.4882"
 }
 
 val properties = Properties()
@@ -123,4 +124,16 @@ dependencies {
 
 kapt {
     correctErrorTypes = true
+}
+
+sonarqube {
+    properties {
+        property("sonar.projectKey", "diarmaidlindsay_AnimeSphinx")
+        property("sonar.organization", "Diarmaid Lindsay")
+        property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.sourceEncoding", "UTF-8")
+        property("sonar.sources", "src/main/java")
+        property("sonar.tests", "src/test/java")
+        property("sonar.java.binaries", "build/classes")
+    }
 }
